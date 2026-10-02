@@ -277,3 +277,15 @@ label { display: block; margin-bottom: 14px; font-size: 0.9rem; }
 @media (prefers-reduced-motion: no-preference) {
   button { transition: border-color 0.15s, filter 0.15s; }
 }
+
+
+.link-button {
+  border: 0;
+  background: transparent;
+  color: #1d4ed8;
+  cursor: pointer;
+  padding: 10px 0 0;
+  font: inherit;
+}
+.link-button:hover { text-decoration: underline; }
+.form-title { margin: 0 0 8px; font-size: 1.25rem; }

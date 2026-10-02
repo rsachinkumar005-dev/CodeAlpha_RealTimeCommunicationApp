@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-me";
 if (!process.env.JWT_SECRET) {
@@ -13,6 +14,34 @@ if (!process.env.JWT_SECRET) {
 // ---- Tiny JSON "database" (swap for MongoDB/PostgreSQL later) ----
 const DATA_DIR = path.join(__dirname, "data");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
+const RESET_EXPIRY_MS = 15 * 60 * 1000;
+
+function resetUrl(token) {
+  const base = String(process.env.APP_URL || "").replace(/\/$/, "");
+  return `${base || "http://localhost:" + (process.env.PORT || 5000)}?reset=${encodeURIComponent(token)}`;
+}
+
+async function sendResetEmail(user, url) {
+  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
+    console.warn(`[auth] SMTP is not configured. Password reset URL for ${user.email}: ${url}`);
+    return false;
+  }
+  const transporter = nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: Number(SMTP_PORT || 587),
+    secure: String(SMTP_PORT || "587") === "465",
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
+  });
+  await transporter.sendMail({
+    from: SMTP_FROM || SMTP_USER,
+    to: user.email,
+    subject: "Reset your Huddle password",
+    text: `Use this link to reset your Huddle password. It expires in 15 minutes:\n\n${url}`,
+    html: `<p>Use the link below to reset your Huddle password. It expires in 15 minutes.</p><p><a href="${url}">Reset password</a></p>`,
+  });
+  return true;
+}
 
 function loadUsers() {
   try {
@@ -90,6 +119,52 @@ router.post("/register", async (req, res) => {
   saveUsers(users);
 
   res.status(201).json({ token: signToken(user), user: publicUser(user) });
+});
+
+router.post("/forgot-password", async (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const generic = { message: "If an account exists for that email, a password reset link has been sent." };
+  if (!EMAIL_RE.test(email)) return res.json(generic);
+
+  const users = loadUsers();
+  const user = users.find((u) => u.email === email);
+  if (!user) return res.json(generic);
+
+  const rawToken = crypto.randomBytes(32).toString("hex");
+  user.resetTokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+  user.resetTokenExpiresAt = Date.now() + RESET_EXPIRY_MS;
+  saveUsers(users);
+
+  const url = resetUrl(rawToken);
+  try {
+    await sendResetEmail(user, url);
+  } catch (err) {
+    console.error("[auth] Failed to send password reset email:", err.message);
+  }
+
+  // In development, the link is also returned so the feature can be tested without SMTP.
+  if (!process.env.SMTP_HOST) return res.json({ ...generic, devResetUrl: url });
+  return res.json(generic);
+});
+
+router.post("/reset-password", async (req, res) => {
+  const token = String(req.body.token || "");
+  const password = String(req.body.password || "");
+  if (!/^[a-f0-9]{64}$/i.test(token)) return res.status(400).json({ error: "Invalid or expired reset link" });
+  if (password.length < 8 || password.length > 100) {
+    return res.status(400).json({ error: "Password must be at least 8 characters" });
+  }
+
+  const hash = crypto.createHash("sha256").update(token).digest("hex");
+  const users = loadUsers();
+  const user = users.find((u) => u.resetTokenHash === hash && Number(u.resetTokenExpiresAt) > Date.now());
+  if (!user) return res.status(400).json({ error: "Invalid or expired reset link" });
+
+  user.passwordHash = await bcrypt.hash(password, 12);
+  delete user.resetTokenHash;
+  delete user.resetTokenExpiresAt;
+  saveUsers(users);
+  res.json({ message: "Password reset successful. You can now log in." });
 });
 
 router.post("/login", async (req, res) => {

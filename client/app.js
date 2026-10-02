@@ -62,8 +62,84 @@
     $("#auth-password").autocomplete = m === "login" ? "current-password" : "new-password";
     $("#auth-error").textContent = "";
   }
-  $("#tab-login").onclick = () => setMode("login");
-  $("#tab-register").onclick = () => setMode("register");
+  $("#tab-login").onclick = () => {
+    $("#auth-form").hidden = false;
+    $("#forgot-form").hidden = true;
+    $("#reset-form").hidden = true;
+    $("#forgot-password-btn").hidden = false;
+    setMode("login");
+  };
+  $("#tab-register").onclick = () => {
+    $("#auth-form").hidden = false;
+    $("#forgot-form").hidden = true;
+    $("#reset-form").hidden = true;
+    $("#forgot-password-btn").hidden = true;
+    setMode("register");
+  };
+
+  function showLogin() {
+    $("#auth-form").hidden = false;
+    $("#forgot-form").hidden = true;
+    $("#reset-form").hidden = true;
+    $("#forgot-password-btn").hidden = false;
+    setMode("login");
+  }
+
+  $("#forgot-password-btn").onclick = () => {
+    $("#auth-form").hidden = true;
+    $("#forgot-form").hidden = false;
+    $("#reset-form").hidden = true;
+    $("#forgot-password-btn").hidden = true;
+    $("#forgot-email").value = $("#auth-email").value;
+    $("#forgot-message").textContent = "";
+    $("#forgot-error").textContent = "";
+  };
+  $("#back-login-btn").onclick = showLogin;
+  $("#reset-back-login-btn").onclick = showLogin;
+
+  $("#forgot-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = e.currentTarget.querySelector("button[type=submit]");
+    btn.disabled = true;
+    $("#forgot-error").textContent = "";
+    $("#forgot-message").textContent = "";
+    try {
+      const data = await api("/forgot-password", { method: "POST", body: { email: $("#forgot-email").value } });
+      $("#forgot-message").textContent = data.message;
+      if (data.devResetUrl) {
+        $("#forgot-message").textContent += " Development reset link: " + data.devResetUrl;
+      }
+    } catch (err) {
+      $("#forgot-error").textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  $("#reset-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const password = $("#reset-password").value;
+    const confirm = $("#reset-password-confirm").value;
+    $("#reset-error").textContent = "";
+    $("#reset-message").textContent = "";
+    if (password !== confirm) return $("#reset-error").textContent = "Passwords do not match";
+    const token = new URLSearchParams(location.search).get("reset");
+    if (!token) return $("#reset-error").textContent = "Invalid reset link";
+    const btn = e.currentTarget.querySelector("button[type=submit]");
+    btn.disabled = true;
+    try {
+      const data = await api("/reset-password", { method: "POST", body: { token, password } });
+      $("#reset-message").textContent = data.message;
+      history.replaceState(null, "", location.pathname);
+      $("#reset-password").value = "";
+      $("#reset-password-confirm").value = "";
+      setTimeout(showLogin, 1000);
+    } catch (err) {
+      $("#reset-error").textContent = err.message;
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   $("#auth-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -85,6 +161,17 @@
       btn.disabled = false;
     }
   });
+
+  function handleResetLink() {
+    const token = new URLSearchParams(location.search).get("reset");
+    if (!token) return;
+    $("#auth-form").hidden = true;
+    $("#forgot-form").hidden = true;
+    $("#reset-form").hidden = false;
+    $("#forgot-password-btn").hidden = true;
+  }
+
+  handleResetLink();
 
   async function onAuthenticated(token, user) {
     state.token = token;

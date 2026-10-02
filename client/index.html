@@ -32,6 +32,33 @@
         <p id="auth-error" class="error" role="alert"></p>
         <button type="submit" class="primary" id="auth-submit">Log in</button>
       </form>
+      <button type="button" class="link-button" id="forgot-password-btn">Forgot password?</button>
+
+      <form id="forgot-form" hidden>
+        <h2 class="form-title">Reset password</h2>
+        <p class="muted">Enter your account email. If it exists, we'll send a reset link.</p>
+        <label>Email
+          <input type="email" id="forgot-email" autocomplete="email" required />
+        </label>
+        <p id="forgot-message" class="hint" role="status"></p>
+        <p id="forgot-error" class="error" role="alert"></p>
+        <button type="submit" class="primary">Send reset link</button>
+        <button type="button" class="link-button" id="back-login-btn">Back to log in</button>
+      </form>
+
+      <form id="reset-form" hidden>
+        <h2 class="form-title">Choose a new password</h2>
+        <label>New password
+          <input type="password" id="reset-password" autocomplete="new-password" minlength="8" required />
+        </label>
+        <label>Confirm password
+          <input type="password" id="reset-password-confirm" autocomplete="new-password" minlength="8" required />
+        </label>
+        <p id="reset-error" class="error" role="alert"></p>
+        <p id="reset-message" class="hint" role="status"></p>
+        <button type="submit" class="primary">Reset password</button>
+        <button type="button" class="link-button" id="reset-back-login-btn">Back to log in</button>
+      </form>
     </div>
   </section>
 
