@@ -20,29 +20,36 @@ function resetUrl(token) {
   const base = String(process.env.APP_URL || "").replace(/\/$/, "");
   return `${base || "http://localhost:" + (process.env.PORT || 5000)}?reset=${encodeURIComponent(token)}`;
 }
-
 async function sendResetEmail(user, url) {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM } = process.env;
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    console.warn(`[auth] SMTP is not configured. Password reset URL for ${user.email}: ${url}`);
+  const { RESEND_API_KEY, RESEND_FROM } = process.env;
+
+  if (!RESEND_API_KEY) {
+    console.warn("[auth] RESEND_API_KEY is not configured.");
     return false;
   }
-  const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT || 587),
-    secure: String(SMTP_PORT || "587") === "465",
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: RESEND_FROM || "onboarding@resend.dev",
+      to: [user.email],
+      subject: "Reset your Huddle password",
+      text: `Use this link to reset your Huddle password. It expires in 15 minutes:\n\n${url}`,
+      html: `<p>Use the link below to reset your Huddle password. It expires in 15 minutes.</p><p><a href="${url}">Reset password</a></p>`,
+    }),
   });
-  await transporter.sendMail({
-    from: SMTP_FROM || SMTP_USER,
-    to: user.email,
-    subject: "Reset your Huddle password",
-    text: `Use this link to reset your Huddle password. It expires in 15 minutes:\n\n${url}`,
-    html: `<p>Use the link below to reset your Huddle password. It expires in 15 minutes.</p><p><a href="${url}">Reset password</a></p>`,
-  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Resend API error: ${response.status} ${errorText}`);
+  }
+
   return true;
 }
-
 function loadUsers() {
   try {
     return JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
