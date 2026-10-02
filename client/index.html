@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Huddle - video calls with a whiteboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ============ AUTH ============ -->
+  <section id="view-auth" class="center-view">
+    <div class="auth-card">
+      <h1 class="brand">Huddle</h1>
+      <p class="tagline">Video calls with a shared whiteboard, private by default.</p>
+
+      <div class="tabs" role="tablist">
+        <button type="button" class="tab active" id="tab-login" role="tab">Log in</button>
+        <button type="button" class="tab" id="tab-register" role="tab">Create account</button>
+      </div>
+
+      <form id="auth-form" autocomplete="on">
+        <label id="name-field" hidden>Name
+          <input type="text" id="auth-name" autocomplete="name" maxlength="40" />
+        </label>
+        <label>Email
+          <input type="email" id="auth-email" autocomplete="email" required />
+        </label>
+        <label>Password
+          <input type="password" id="auth-password" autocomplete="current-password" minlength="8" required />
+        </label>
+        <p id="auth-error" class="error" role="alert"></p>
+        <button type="submit" class="primary" id="auth-submit">Log in</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ LOBBY ============ -->
+  <section id="view-lobby" class="center-view" hidden>
+    <div class="lobby-card">
+      <div class="lobby-head">
+        <div>
+          <h1 class="brand small">Huddle</h1>
+          <p class="muted">Signed in as <strong id="lobby-user"></strong></p>
+        </div>
+        <button type="button" class="ghost" id="logout-btn">Log out</button>
+      </div>
+
+      <form id="join-form">
+        <label>Room ID
+          <input type="text" id="room-input" placeholder="e.g. team-standup" maxlength="40" required />
+        </label>
+        <label>Room passphrase <span class="muted">(optional)</span>
+          <input type="password" id="pass-input" autocomplete="off" />
+        </label>
+        <p class="hint">With a passphrase, chat and shared files are encrypted in your browser. Everyone in the room needs to enter the same one.</p>
+        <p id="lobby-error" class="error" role="alert"></p>
+        <div class="row">
+          <button type="submit" class="primary">Join room</button>
+          <button type="button" class="secondary" id="new-room-btn">Generate new room ID</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ ROOM ============ -->
+  <section id="view-room" class="room" hidden>
+    <header class="room-bar">
+      <div class="room-id">
+        <strong id="room-title"></strong>
+        <span id="count" class="muted"></span>
+      </div>
+      <span id="enc-badge" class="badge"></span>
+      <button type="button" class="ghost" id="copy-link">Copy invite link</button>
+    </header>
+
+    <div class="room-main">
+      <div class="stage">
+        <div id="grid" class="grid"></div>
+
+        <div id="board-wrap" class="board-wrap" hidden>
+          <div class="board-tools">
+            <label class="tool">Colour <input type="color" id="board-color" value="#1d4ed8" /></label>
+            <label class="tool">Size <input type="range" id="board-size" min="1" max="20" value="3" /></label>
+            <button type="button" class="ghost" id="board-eraser" aria-pressed="false">Eraser</button>
+            <button type="button" class="ghost" id="board-save">Save PNG</button>
+            <button type="button" class="ghost danger" id="board-clear">Clear for everyone</button>
+          </div>
+          <canvas id="board"></canvas>
+        </div>
+      </div>
+
+      <aside class="chat" aria-label="Chat">
+        <div id="messages" class="messages" aria-live="polite"></div>
+        <form id="chat-form" class="chat-form">
+          <input type="text" id="chat-input" placeholder="Message the room" maxlength="2000" autocomplete="off" />
+          <button type="submit" class="primary">Send</button>
+        </form>
+      </aside>
+    </div>
+
+    <footer class="controls">
+      <button type="button" id="btn-mic" class="ctl" aria-pressed="true">Mute</button>
+      <button type="button" id="btn-cam" class="ctl" aria-pressed="true">Stop video</button>
+      <button type="button" id="btn-screen" class="ctl" aria-pressed="false">Share screen</button>
+      <button type="button" id="btn-board" class="ctl" aria-pressed="false">Whiteboard</button>
+      <button type="button" id="btn-file" class="ctl">Send file</button>
+      <input type="file" id="file-input" hidden />
+      <button type="button" id="btn-leave" class="ctl leave">Leave</button>
+    </footer>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
