@@ -1,135 +1,128 @@
-# Huddle --- Real-Time Video & Collaboration App
+# Huddle — RTC Video Call
 
-A real-time multi-user video conferencing and collaboration web app
-built with **WebRTC, Socket.io, Express.js and Node.js**.
+A real-time video collaboration web application built with WebRTC, Node.js, and Express.js.
 
 ## 🚀 Live Demo
 
-**https://rtc-video-call-sm2q.onrender.com**
+https://rtc-video-call-sm2q.onrender.com
 
-> The free Render service may sleep after inactivity, so the first
-> request can take a little longer to load.
+## 📂 GitHub Repository
+
+https://github.com/rsachinkumar005-dev/rtc-video-call
 
 ## ✨ Features
 
--   🎥 Multi-user video calling with WebRTC
--   🎤 Microphone and camera controls
--   🖥️ Screen sharing
--   💬 Real-time chat
--   📁 Peer-to-peer file sharing
--   📝 Shared whiteboard
--   🔐 User registration and login
--   🔑 JWT-based authentication
--   🔒 Password hashing with bcrypt
--   🛡️ Security hardening with Helmet and rate limiting
--   🔐 Optional room passphrase encryption for chat and file data
--   📱 Works in modern desktop and mobile browsers
+- 🎥 Real-time video calling using WebRTC
+- 🎙️ Microphone and camera controls
+- 🖥️ Screen sharing
+- 💬 Real-time chat
+- 📁 File sharing
+- 📝 Collaborative whiteboard
+- 🔐 User registration and login
+- 🔑 Forgot password and password reset
+- 📧 Password reset emails using Resend API
+- 🌐 Deployed on Render
 
 ## 🛠️ Tech Stack
 
-**Frontend** - HTML - CSS - JavaScript - WebRTC
+### Frontend
+- HTML5
+- CSS3
+- JavaScript
+- WebRTC
 
-**Backend** - Node.js - Express.js - Socket.io
+### Backend
+- Node.js
+- Express.js
 
-**Authentication & Security** - JWT - bcrypt - Helmet - CORS - Express
-Rate Limit
+### Services
+- Resend API
+- Render
+- GitHub
 
-**Deployment** - GitHub - Render
-
-## 📁 Project Structure
-
-``` text
-rtc-app/
-├── client/
-│   ├── index.html
-│   ├── app.js
-│   └── style.css
-├── server/
-│   ├── index.js
-│   └── auth.js
-├── .env.example
-├── .gitignore
-├── package.json
-├── package-lock.json
-└── README.md
-```
-
-## 💻 Run Locally
+## ⚙️ Installation
 
 ### 1. Clone the repository
 
-``` bash
+```bash
 git clone https://github.com/rsachinkumar005-dev/rtc-video-call.git
 cd rtc-video-call
-```
 
-### 2. Install dependencies
-
-``` bash
+2. Install dependencies
 npm install
-```
+3. Configure environment variables
 
-### 3. Create the environment file
+Create a .env file in the project root.
 
-Create a `.env` file from `.env.example` and set a strong JWT secret.
+Example:
 
-``` env
 PORT=5000
-JWT_SECRET=your-long-random-secret
-CLIENT_ORIGIN=
-MAX_PEERS=6
-```
+JWT_SECRET=your_strong_jwt_secret
+APP_URL=http://localhost:5000
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM=onboarding@resend.dev
 
-### 4. Start the server
+Never upload real API keys, passwords, or secrets to GitHub.
 
-``` bash
+4. Start the application
 npm start
-```
 
 Open:
 
-``` text
 http://localhost:5000
-```
+🔐 Password Reset
 
-For local testing, open the app in two browser windows and join the same
-room with different accounts.
+The application includes a complete password-reset system.
 
-## 🌐 Deployment
+Click Forgot Password.
+Enter the registered email.
+A password reset link is generated.
+The link is sent through the Resend API.
+The link expires after a limited period.
+Create a new password and log in again.
+▶️ How to Use
+Open the application.
+Create an account or log in.
+Create or join a video room.
+Allow camera and microphone permissions.
+Use video, audio, screen sharing, chat, file sharing, and whiteboard features.
+🌐 Deployment
 
-This project is deployed as a Node.js Web Service on Render.
+The application is deployed on Render and connected to the GitHub main branch.
 
--   Repository: https://github.com/rsachinkumar005-dev/rtc-video-call
--   Live Demo: https://rtc-video-call-sm2q.onrender.com
+Production environment variables are configured through the Render dashboard.
 
-The application uses Socket.io for real-time signaling and WebRTC for
-peer-to-peer media/data connections.
+🔒 Security
+Secrets are stored in environment variables.
+.env is excluded through .gitignore.
+Password reset tokens expire.
+JWT secret is configured through the deployment environment.
+API keys and passwords are never committed to GitHub.
+🧪 Tested Features
+User registration and login
+Forgot password
+Password reset email
+Password reset
+Video calling
+Camera and microphone
+Screen sharing
+Chat
+File sharing
+Whiteboard
+Render deployment
+🔮 Future Improvements
+PostgreSQL database
+User profiles
+Meeting history
+Better room management
+Improved mobile responsiveness
+Automated tests and CI/CD
+👨‍💻 Author
 
-## 🔐 Security Notes
-
--   `.env` is excluded from Git using `.gitignore`.
--   Passwords are stored as bcrypt hashes rather than plain text.
--   JWT authentication is used for authenticated sessions and Socket.io
-    connections.
--   Helmet and rate limiting provide additional server-side protection.
--   Never commit real secrets, API keys, or production credentials to
-    GitHub.
-
-## 📌 Project Limitations
-
--   WebRTC mesh connections become more resource-intensive as the room
-    size increases.
--   For large-scale video conferencing, an SFU architecture such as
-    LiveKit or mediasoup would be more suitable.
--   A TURN server may be required for some restrictive network/NAT
-    environments.
-
-## 👨‍💻 Author
-
-**Sachin Kumar**
+Sachin Kumar
 
 GitHub: https://github.com/rsachinkumar005-dev
 
-------------------------------------------------------------------------
+📄 License
 
-⭐ If you find this project useful, consider starring the repository.
+This project is intended for learning, internship, and educational purposes.
